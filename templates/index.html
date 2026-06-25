@@ -92,6 +92,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC
 .audio-btn-sm { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; border: none; background: var(--audio-btn-bg); cursor: pointer; transition: all 0.2s; font-size: 0.75rem; flex-shrink: 0; vertical-align: middle; margin-left: 6px; opacity: 0.7; }
 .audio-btn-sm:hover { background: var(--audio-btn-hover); transform: scale(1.1); opacity: 1; }
 .audio-btn-sm.playing { background: var(--accent); color: #fff; animation: pulse 0.6s infinite; opacity: 1; }
+.audio-btn-flag { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--bg-card); cursor: pointer; transition: all 0.2s; font-size: 1rem; flex-shrink: 0; margin-right: 2px; }
+.audio-btn-flag:hover { transform: scale(1.15); border-color: var(--accent); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+.audio-btn-flag.playing { border-color: var(--accent); background: var(--accent-light); animation: pulse 0.6s infinite; }
+.audio-btn-flag-sm { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg-card); cursor: pointer; transition: all 0.2s; font-size: 0.8rem; flex-shrink: 0; vertical-align: middle; margin-left: 4px; opacity: 0.7; }
+.audio-btn-flag-sm:hover { transform: scale(1.15); border-color: var(--accent); opacity: 1; }
+.audio-btn-flag-sm.playing { border-color: var(--accent); background: var(--accent-light); animation: pulse 0.6s infinite; opacity: 1; }
 @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
 
 /* Article */
@@ -289,37 +295,43 @@ function loadVoices() {
 }
 
 function getBestVoice(langPrefix) {
-  // Priority: exact match > starts-with match > contains match > any
   const voices = _availableVoices;
-  // 1. Exact lang match
   let voice = voices.find(v => v.lang === langPrefix);
-  // 2. Starts with lang prefix (e.g. 'pt-BR' for langPrefix='pt')
   if (!voice) voice = voices.find(v => v.lang.startsWith(langPrefix + '-'));
-  // 3. Contains lang code
   if (!voice) voice = voices.find(v => v.lang.includes(langPrefix));
-  // 4. For Portuguese specifically: try broader search
-  if (!voice && langPrefix === 'pt') {
-    voice = voices.find(v => v.lang.startsWith('pt'));
-  }
+  if (!voice && langPrefix === 'ja') voice = voices.find(v => v.lang.startsWith('ja'));
   return voice || null;
 }
 
-async function speakWord(text, btn) {
+function getVoiceForDialect(dialect) {
+  // dialect is 'pt-BR' or 'pt-PT'
+  const voices = _availableVoices;
+  let voice = voices.find(v => v.lang === dialect);
+  if (!voice) voice = voices.find(v => v.lang.startsWith(dialect));
+  if (!voice) voice = voices.find(v => v.lang.includes(dialect.split('-')[0]));
+  return voice || null;
+}
+
+async function speakWord(text, btn, dialect) {
   if (!window.speechSynthesis) { showToast('浏览器不支持语音合成'); return; }
   window.speechSynthesis.cancel();
-
-  // Load voices if needed
   if (!_voicesLoaded) await loadVoices();
 
-  const lang = currentLanguage === 'jp' ? 'ja' : 'pt';
-  const voice = getBestVoice(lang);
-
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = currentLanguage === 'jp' ? 'ja-JP' : 'pt-BR';
-  if (voice) utterance.voice = voice;
 
-  // Slower rate for Portuguese for clearer pronunciation
-  utterance.rate = currentLanguage === 'jp' ? 0.85 : 0.75;
+  if (dialect) {
+    // Specific dialect requested (pt-BR or pt-PT)
+    utterance.lang = dialect;
+    const voice = getVoiceForDialect(dialect);
+    if (voice) utterance.voice = voice;
+  } else {
+    const lang = currentLanguage === 'jp' ? 'ja' : 'pt';
+    utterance.lang = currentLanguage === 'jp' ? 'ja-JP' : 'pt-BR';
+    const voice = getBestVoice(lang);
+    if (voice) utterance.voice = voice;
+  }
+
+  utterance.rate = (dialect || currentLanguage === 'pt') ? 0.75 : 0.85;
   utterance.pitch = 1.0;
 
   utterance.onstart = () => btn && btn.classList.add('playing');
@@ -357,11 +369,25 @@ function renderWords(words) {
   const isJP = currentLanguage === 'jp';
   grid.innerHTML = words.map((w,i) => {
     const regionalHTML = w.regional_note ? `<div class="regional-note">🌍 ${esc(w.regional_note)}</div>` : '';
-    const speakText = isJP ? w.word : w.word;
+    const exText = isJP ? w.example_jp : w.example_pt;
+    const exSafe = esc(exText).replace(/'/g,"\\'");
+    const wordSafe = esc(w.word).replace(/'/g,"\\'");
+
+    // Audio buttons: Japanese → single 🔊, Portuguese → 🇧🇷 + 🇵🇹
+    const wordAudio = isJP
+      ? `<button class="audio-btn" onclick="event.stopPropagation();speakWord('${wordSafe}',this)" title="发音">🔊</button>`
+      : `<button class="audio-btn-flag" onclick="event.stopPropagation();speakWord('${wordSafe}',this,'pt-BR')" title="巴西葡语">🇧🇷</button>
+         <button class="audio-btn-flag" onclick="event.stopPropagation();speakWord('${wordSafe}',this,'pt-PT')" title="欧洲葡语">🇵🇹</button>`;
+
+    const exAudio = isJP
+      ? `<button class="audio-btn-sm" onclick="event.stopPropagation();speakWord('${exSafe}',this)" title="朗读例句">🔊</button>`
+      : `<button class="audio-btn-flag-sm" onclick="event.stopPropagation();speakWord('${exSafe}',this,'pt-BR')" title="巴西葡语">🇧🇷</button>
+         <button class="audio-btn-flag-sm" onclick="event.stopPropagation();speakWord('${exSafe}',this,'pt-PT')" title="欧洲葡语">🇵🇹</button>`;
+
     return `
     <div class="word-card" style="animation:fadeIn 0.${3+i}s ease both">
       <div class="word-header">
-        <button class="audio-btn" onclick="event.stopPropagation();speakWord('${esc(speakText.replace(/'/g,"\\'"))}',this)" title="发音">🔊</button>
+        ${wordAudio}
         <div>
           <span class="word-text">${esc(w.word)}</span>
           ${isJP ? `<span class="word-reading">${esc(w.reading||'')}</span>` : ''}
@@ -372,8 +398,8 @@ function renderWords(words) {
       <div class="word-meaning">💡 ${esc(w.meaning_cn)}</div>
       <div class="example-label">📖 例句</div>
       <div class="example-text">
-        ${esc(isJP ? w.example_jp : w.example_pt)}
-        <button class="audio-btn-sm" onclick="event.stopPropagation();speakWord('${esc((isJP ? w.example_jp : w.example_pt).replace(/'/g,"\\'"))}',this)" title="朗读例句">🔊</button>
+        ${esc(exText)}
+        ${exAudio}
       </div>
       <div class="example-cn">${esc(w.example_cn)}</div>
       ${regionalHTML}
