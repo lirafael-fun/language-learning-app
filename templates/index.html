@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>双语学习 · 日本語 & Português</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════════
+   CSS Custom Properties — Theme System
+   ═══════════════════════════════════════════════════════════════════ */
+:root {
+  /* Japanese theme (default) */
+  --bg: #faf6f1;
+  --bg-card: #ffffff;
+  --text: #2c2416;
+  --text-secondary: #6b5e4a;
+  --accent: #c84b31;
+  --accent-hover: #a63a24;
+  --accent-light: #fdf0eb;
+  --border: #e8d5c4;
+  --shadow: 0 2px 12px rgba(0,0,0,0.06);
+  --tag-bg: #f0ebe3;
+  --header-bg: linear-gradient(135deg, #2d1810 0%, #4a2c1a 50%, #6b3a2a 100%);
+  --header-text: #f5e6d3;
+  --lang-badge-bg: #c84b31;
+  --lang-badge-text: #fff;
+  --pos-color: #8b6914;
+  --reading-color: #6b5e4a;
+  --example-bg: #faf7f2;
+  --tab-active-bg: #fff;
+  --tab-active-border: #c84b31;
+  --flag-emoji: "🇯🇵";
+}
+
+[data-theme="pt"] {
+  --bg: #f0f7f4;
+  --bg-card: #ffffff;
+  --text: #1a3c2a;
+  --text-secondary: #4a6b5a;
+  --accent: #1a7a4c;
+  --accent-hover: #145e3a;
+  --accent-light: #e8f5ee;
+  --border: #c8e0d0;
+  --shadow: 0 2px 12px rgba(0,0,0,0.06);
+  --tag-bg: #e0efe8;
+  --header-bg: linear-gradient(135deg, #0a2e1a 0%, #14522a 50%, #1a7a4c 100%);
+  --header-text: #d4f0e0;
+  --lang-badge-bg: #1a7a4c;
+  --lang-badge-text: #fff;
+  --pos-color: #1a7a4c;
+  --reading-color: #4a6b5a;
+  --example-bg: #f4faf7;
+  --tab-active-bg: #fff;
+  --tab-active-border: #1a7a4c;
+  --flag-emoji: "🇧🇷";
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Base Styles
+   ═══════════════════════════════════════════════════════════════════ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Noto Sans JP", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Header
+   ═══════════════════════════════════════════════════════════════════ */
+.header {
+  background: var(--header-bg);
+  color: var(--header-text);
+  padding: 24px 20px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+.header .subtitle {
+  font-size: 0.95rem;
+  opacity: 0.85;
+  margin-bottom: 16px;
+}
+
+/* Language Toggle */
+.lang-toggle {
+  display: inline-flex;
+  background: rgba(255,255,255,0.15);
+  border-radius: 30px;
+  padding: 4px;
+  backdrop-filter: blur(10px);
+}
+
+.lang-btn {
+  padding: 8px 24px;
+  border: none;
+  border-radius: 26px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  background: transparent;
+  color: var(--header-text);
+  opacity: 0.7;
+}
+
+.lang-btn:hover { opacity: 0.9; }
+
+.lang-btn.active {
+  background: var(--lang-badge-bg);
+  color: var(--lang-badge-text);
+  opacity: 1;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Tab Navigation
+   ═══════════════════════════════════════════════════════════════════ */
+.tab-nav {
+  display: flex;
+  gap: 0;
+  max-width: 800px;
+  margin: 24px auto 0;
+  padding: 0 20px;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 14px 20px;
+  border: 2px solid var(--border);
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.tab-btn:first-child { border-radius: 12px 0 0 12px; }
+.tab-btn:last-child { border-radius: 0 12px 12px 0; border-left: none; }
+
+.tab-btn.active {
+  background: var(--tab-active-bg);
+  color: var(--accent);
+  border-color: var(--tab-active-border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Main Content
+   ═══════════════════════════════════════════════════════════════════ */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Loading & Empty States */
+.loading, .empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+}
+
+.loading .spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ═══════════════════════════════════════════════════════════════════
+   Word Cards
+   ═══════════════════════════════════════════════════════════════════ */
+.word-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.word-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.word-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+
+.word-card .word-main {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.word-card .word-text {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.word-card .word-reading {
+  font-size: 0.9rem;
+  color: var(--reading-color);
+}
+
+.word-card .word-pos {
+  display: inline-block;
+  font-size: 0.78rem;
+  background: var(--tag-bg);
+  color: var(--pos-color);
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+  margin: 6px 0 10px;
+}
+
+.word-card .word-meaning {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--border);
+}
+
+.word-card .example-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.word-card .example-text {
+  font-size: 0.92rem;
+  background: var(--example-bg);
+  padding: 10px 12px;
+  border-radius: 8px;
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.word-card .example-cn {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.word-card .regional-note {
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: var(--accent-light);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Article View
+   ═══════════════════════════════════════════════════════════════════ */
+.article-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+}
+
+.article-card .article-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.article-card .article-region {
+  display: inline-block;
+  font-size: 0.78rem;
+  background: var(--tag-bg);
+  color: var(--accent);
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.article-card .article-body {
+  font-size: 1.05rem;
+  line-height: 2;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
+.summary-box {
+  background: var(--accent-light);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.summary-box h3 {
+  font-size: 1rem;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.summary-box p {
+  font-size: 0.95rem;
+  color: var(--text);
+  line-height: 1.7;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Buttons
+   ═══════════════════════════════════════════════════════════════════ */
+.btn-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 12px 28px;
+  border: none;
+  border-radius: 30px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-secondary {
+  background: var(--bg-card);
+  color: var(--accent);
+  border: 2px solid var(--accent);
+}
+
+.btn-secondary:hover {
+  background: var(--accent-light);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Error Toast
+   ═══════════════════════════════════════════════════════════════════ */
+.toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #e74c3c;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  z-index: 1000;
+  animation: slideDown 0.3s ease;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+@keyframes slideDown {
+  from { transform: translateX(-50%) translateY(-60px); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Responsive
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  .header h1 { font-size: 1.4rem; }
+  .word-grid { grid-template-columns: 1fr; }
+  .article-card { padding: 20px; }
+  .btn-row { flex-direction: column; align-items: center; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Word Count Badge
+   ═══════════════════════════════════════════════════════════════════ */
+.word-count {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     Header with Language Toggle
+     ═══════════════════════════════════════════════════════════════ -->
+<header class="header">
+  <h1>🌐 双语学习 · Bilingual Learning</h1>
+  <p class="subtitle">通过单词和文章，掌握地道表达</p>
+  <div class="lang-toggle">
+    <button class="lang-btn active" data-lang="jp" onclick="switchLanguage('jp')">
+      🇯🇵 日本語
+    </button>
+    <button class="lang-btn" data-lang="pt" onclick="switchLanguage('pt')">
+      🇧🇷 Português
+    </button>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     Tab Navigation: Words / Articles
+     ═══════════════════════════════════════════════════════════════ -->
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="words" onclick="switchTab('words')">
+    📝 单词 Words
+  </button>
+  <button class="tab-btn" data-tab="articles" onclick="switchTab('articles')">
+    📰 文章 Articles
+  </button>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     Main Content
+     ═══════════════════════════════════════════════════════════════ -->
+<main class="container">
+
+  <!-- Words View -->
+  <section id="words-view">
+    <div class="word-count" id="word-count"></div>
+    <div class="word-grid" id="word-grid"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="refresh-words-btn" onclick="refreshWords()">
+        🔄 换一批
+      </button>
+    </div>
+  </section>
+
+  <!-- Articles View -->
+  <section id="articles-view" style="display:none;">
+    <div id="article-content"></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" id="summary-btn" onclick="generateSummary()">
+        📋 查看概述
+      </button>
+      <button class="btn btn-primary" id="refresh-article-btn" onclick="refreshArticle()">
+        🔄 换一篇
+      </button>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     JavaScript — Application Logic
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+// ── State ──────────────────────────────────────────────────────────
+let currentLanguage = 'jp';
+let currentTab = 'words';
+let wordsData = null;
+let articleData = null;
+let summaryText = '';
+let isLoading = false;
+
+// ── Language Switching ──────────────────────────────────────────────
+function switchLanguage(lang) {
+  if (isLoading) return;
+  currentLanguage = lang;
+
+  // Update toggle buttons
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === lang);
+  });
+
+  // Update theme
+  document.documentElement.setAttribute('data-theme', lang === 'pt' ? 'pt' : '');
+
+  // Reset state
+  wordsData = null;
+  articleData = null;
+  summaryText = '';
+
+  // Reload current tab
+  loadCurrentTab();
+}
+
+// ── Tab Switching ───────────────────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tab);
+  });
+
+  document.getElementById('words-view').style.display = tab === 'words' ? 'block' : 'none';
+  document.getElementById('articles-view').style.display = tab === 'articles' ? 'block' : 'none';
+
+  loadCurrentTab();
+}
+
+// ── Load Current Tab ────────────────────────────────────────────────
+function loadCurrentTab() {
+  if (currentTab === 'words') {
+    if (wordsData) {
+      renderWords(wordsData);
+    } else {
+      refreshWords();
+    }
+  } else {
+    if (articleData) {
+      renderArticle(articleData);
+    } else {
+      refreshArticle();
+    }
+  }
+}
+
+// ── API Helpers ─────────────────────────────────────────────────────
+async function apiCall(endpoint, body) {
+  const resp = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({ error: `HTTP ${resp.status}` }));
+    throw new Error(err.error || `HTTP ${resp.status}`);
+  }
+  const data = await resp.json();
+  if (!data.success) throw new Error(data.error || 'Unknown error');
+  return data;
+}
+
+// ── Toast ───────────────────────────────────────────────────────────
+function showToast(msg) {
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  WORD VIEW
+// ═══════════════════════════════════════════════════════════════════
+
+function setLoading(loading) {
+  isLoading = loading;
+  document.querySelectorAll('.btn').forEach(b => b.disabled = loading);
+}
+
+async function refreshWords() {
+  if (isLoading) return;
+  setLoading(true);
+
+  const grid = document.getElementById('word-grid');
+  grid.innerHTML = '<div class="loading"><div class="spinner"></div><p>正在生成单词...</p></div>';
+
+  try {
+    const result = await apiCall('/api/generate-words', { language: currentLanguage });
+    wordsData = result.data.words;
+    renderWords(wordsData);
+  } catch (err) {
+    console.error(err);
+    grid.innerHTML = `<div class="empty-state"><p>❌ 生成失败：${err.message}</p><p style="margin-top:8px;font-size:0.85rem">请确保后端已启动且 DEEPSEEK_API_KEY 已配置</p></div>`;
+  } finally {
+    setLoading(false);
+  }
+}
+
+function renderWords(words) {
+  const grid = document.getElementById('word-grid');
+  const count = document.getElementById('word-count');
+  count.textContent = `共 ${words.length} 个单词`;
+
+  if (!words || words.length === 0) {
+    grid.innerHTML = '<div class="empty-state"><p>暂无单词数据</p></div>';
+    return;
+  }
+
+  grid.innerHTML = words.map((w, i) => {
+    const isJP = currentLanguage === 'jp';
+    let regionalHTML = '';
+    if (w.regional_note) {
+      regionalHTML = `<div class="regional-note">🌍 ${w.regional_note}</div>`;
+    }
+
+    return `
+      <div class="word-card" style="animation: fadeIn 0.${3+i}5s ease both">
+        <div class="word-main">
+          <span class="word-text">${esc(w.word)}</span>
+          ${isJP ? `<span class="word-reading">${esc(w.reading || '')}</span>` : ''}
+        </div>
+        <span class="word-pos">${esc(w.pos)}</span>
+        <div class="word-meaning">💡 ${esc(w.meaning_cn)}</div>
+        <div class="example-label">例句 Example</div>
+        <div class="example-text">${esc(isJP ? w.example_jp : w.example_pt)}</div>
+        <div class="example-cn">${esc(w.example_cn)}</div>
+        ${regionalHTML}
+      </div>
+    `;
+  }).join('');
+}
+
+// ── Simple fade-in keyframes injected via JS ──
+const fadeStyle = document.createElement('style');
+fadeStyle.textContent = '@keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }';
+document.head.appendChild(fadeStyle);
+
+// ═══════════════════════════════════════════════════════════════════
+//  ARTICLE VIEW
+// ═══════════════════════════════════════════════════════════════════
+
+async function refreshArticle() {
+  if (isLoading) return;
+  setLoading(true);
+  summaryText = '';
+
+  const container = document.getElementById('article-content');
+  container.innerHTML = '<div class="loading"><div class="spinner"></div><p>正在获取文章...</p></div>';
+
+  // Reset summary button
+  const summaryBtn = document.getElementById('summary-btn');
+  summaryBtn.textContent = '📋 查看概述';
+  summaryBtn.disabled = false;
+
+  try {
+    const result = await apiCall('/api/generate-article', { language: currentLanguage });
+    articleData = result.data;
+    renderArticle(articleData);
+  } catch (err) {
+    console.error(err);
+    container.innerHTML = `<div class="empty-state"><p>❌ 获取文章失败：${err.message}</p></div>`;
+  } finally {
+    setLoading(false);
+  }
+}
+
+function renderArticle(data) {
+  const container = document.getElementById('article-content');
+  if (!data) {
+    container.innerHTML = '<div class="empty-state"><p>暂无文章</p></div>';
+    return;
+  }
+
+  const regionBadge = data.region
+    ? `<span class="article-region">📍 ${esc(data.region)}</span>`
+    : '';
+
+  container.innerHTML = `
+    <div class="article-card">
+      <h2 class="article-title">${esc(data.title)}</h2>
+      ${regionBadge}
+      <div class="article-body">${esc(data.content)}</div>
+      <div id="summary-area"></div>
+    </div>
+  `;
+
+  if (summaryText) {
+    document.getElementById('summary-area').innerHTML = `
+      <div class="summary-box">
+        <h3>📋 文章概述</h3>
+        <p>${esc(summaryText)}</p>
+      </div>
+    `;
+  }
+}
+
+async function generateSummary() {
+  if (!articleData) return;
+  const summaryBtn = document.getElementById('summary-btn');
+
+  summaryBtn.disabled = true;
+  summaryBtn.textContent = '⏳ 生成中...';
+
+  try {
+    const result = await apiCall('/api/summarize', {
+      language: currentLanguage,
+      title: articleData.title,
+      content: articleData.content,
+    });
+    summaryText = result.summary;
+
+    const summaryArea = document.getElementById('summary-area');
+    if (summaryArea) {
+      summaryArea.innerHTML = `
+        <div class="summary-box">
+          <h3>📋 文章概述</h3>
+          <p>${esc(summaryText)}</p>
+        </div>
+      `;
+    }
+
+    summaryBtn.textContent = '✅ 概述已生成';
+  } catch (err) {
+    console.error(err);
+    showToast('生成概述失败：' + err.message);
+    summaryBtn.disabled = false;
+    summaryBtn.textContent = '📋 查看概述';
+  }
+}
+
+// ── Escape HTML ─────────────────────────────────────────────────────
+function esc(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ── Init ────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadCurrentTab();
+});
+</script>
+
+</body>
+</html>
