@@ -143,12 +143,31 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC
 
 /* Responsive */
 @media (max-width: 640px) {
-  .header h1 { font-size: 1.3rem; }
-  .word-grid { grid-template-columns: 1fr; }
-  .article-card { padding: 18px; }
-  .btn-row { flex-direction: column; align-items: center; }
-  .level-pill { padding: 4px 10px; font-size: 0.72rem; }
-  .word-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-width: 90vw; }
+  .header { padding: 14px 12px 12px; }
+  .header h1 { font-size: 1.15rem; }
+  .header .subtitle { font-size: 0.75rem; margin-bottom: 8px; }
+  .lang-btn { padding: 6px 16px; font-size: 0.82rem; }
+  .level-bar { gap: 4px; padding: 0 4px; }
+  .level-pill { padding: 5px 9px; font-size: 0.7rem; border-radius: 14px; }
+  .tab-btn { padding: 10px 14px; font-size: 0.85rem; }
+  .container { padding: 12px; }
+  .word-grid { grid-template-columns: 1fr; gap: 10px; }
+  .word-card { padding: 14px; }
+  .word-text { font-size: 1.2rem; }
+  .article-card { padding: 14px; }
+  .article-title { font-size: 1.15rem; }
+  .article-body { font-size: 0.95rem; line-height: 2; }
+  .btn-row { flex-direction: column; align-items: center; gap: 8px; }
+  .btn { padding: 12px 24px; font-size: 0.9rem; min-width: 44px; min-height: 44px; }
+  .word-popup { position: fixed; top: 10%; left: 5%; right: 5%; max-width: 90vw; max-height: 80vh; overflow-y: auto; transform: none; }
+  .lookup-float { font-size: 0.8rem; padding: 8px 14px; }
+  /* Touch-friendly audio buttons */
+  .audio-btn { width: 38px; height: 38px; font-size: 1rem; }
+  .audio-btn-flag { width: 34px; height: 34px; font-size: 1.1rem; margin-right: 3px; }
+  .audio-btn-sm { width: 30px; height: 30px; font-size: 0.8rem; }
+  .audio-btn-flag-sm { width: 28px; height: 28px; font-size: 0.85rem; }
+  .level-badge { font-size: 0.68rem; padding: 2px 7px; }
+  .article-region { font-size: 0.7rem; }
 }
 </style>
 </head>
@@ -277,74 +296,116 @@ function showToast(msg) { const t = document.createElement('div'); t.className='
 function esc(str) { if(!str) return ''; return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 // ═══════════════════════════════════════════════════
-//  Audio (Web Speech API) — with voice selection
+//  Audio (Web Speech API) — mobile-friendly
 // ═══════════════════════════════════════════════════
-let _voicesLoaded = false;
+let _voicesReady = false;
 let _availableVoices = [];
+let _voiceLoadPromise = null;
 
-function loadVoices() {
-  return new Promise((resolve) => {
+function ensureVoices() {
+  if (_voiceLoadPromise) return _voiceLoadPromise;
+  _voiceLoadPromise = new Promise((resolve) => {
     const voices = window.speechSynthesis.getVoices();
-    if (voices.length > 0) { _availableVoices = voices; _voicesLoaded = true; resolve(voices); return; }
-    window.speechSynthesis.onvoiceschanged = () => {
+    if (voices && voices.length > 0) {
+      _availableVoices = voices;
+      _voicesReady = true;
+      resolve(voices);
+      return;
+    }
+    // Mobile: voices load async — wait for onvoiceschanged
+    const handler = () => {
       _availableVoices = window.speechSynthesis.getVoices();
-      _voicesLoaded = true;
-      resolve(_availableVoices);
+      if (_availableVoices.length > 0) {
+        _voicesReady = true;
+        window.speechSynthesis.removeEventListener('voiceschanged', handler);
+        resolve(_availableVoices);
+      }
     };
+    window.speechSynthesis.addEventListener('voiceschanged', handler);
+    // Timeout fallback: resolve after 1s even if no voices
+    setTimeout(() => {
+      if (!_voicesReady) {
+        _availableVoices = window.speechSynthesis.getVoices();
+        _voicesReady = true;
+        window.speechSynthesis.removeEventListener('voiceschanged', handler);
+        resolve(_availableVoices);
+      }
+    }, 1500);
   });
+  return _voiceLoadPromise;
 }
 
-function getBestVoice(langPrefix) {
-  const voices = _availableVoices;
-  let voice = voices.find(v => v.lang === langPrefix);
-  if (!voice) voice = voices.find(v => v.lang.startsWith(langPrefix + '-'));
-  if (!voice) voice = voices.find(v => v.lang.includes(langPrefix));
-  if (!voice && langPrefix === 'ja') voice = voices.find(v => v.lang.startsWith('ja'));
-  return voice || null;
-}
+// Preload voices on first touch
+document.addEventListener('touchstart', () => ensureVoices(), { once: true });
+document.addEventListener('click', () => ensureVoices(), { once: true });
 
-function getVoiceForDialect(dialect) {
-  // dialect is 'pt-BR' or 'pt-PT'
-  const voices = _availableVoices;
-  let voice = voices.find(v => v.lang === dialect);
-  if (!voice) voice = voices.find(v => v.lang.startsWith(dialect));
-  if (!voice) voice = voices.find(v => v.lang.includes(dialect.split('-')[0]));
-  return voice || null;
+function findVoice(dialect) {
+  // dialect is 'pt-BR', 'pt-PT', or 'ja-JP'
+  if (!_availableVoices.length) return null;
+  // 1. Exact match
+  let v = _availableVoices.find(x => x.lang === dialect);
+  // 2. Starts with
+  if (!v) v = _availableVoices.find(x => x.lang.startsWith(dialect));
+  // 3. Same language family
+  if (!v) {
+    const base = dialect.split('-')[0];
+    v = _availableVoices.find(x => x.lang.startsWith(base));
+  }
+  return v || null;
 }
 
 async function speakWord(text, btn, dialect) {
   if (!window.speechSynthesis) { showToast('浏览器不支持语音合成'); return; }
+
+  // Cancel any ongoing speech — important on iOS
   window.speechSynthesis.cancel();
-  if (!_voicesLoaded) await loadVoices();
 
+  // Ensure voices are loaded
+  await ensureVoices();
+
+  const langCode = dialect || (currentLanguage === 'jp' ? 'ja-JP' : 'pt-BR');
   const utterance = new SpeechSynthesisUtterance(text);
-
-  if (dialect) {
-    // Specific dialect requested (pt-BR or pt-PT)
-    utterance.lang = dialect;
-    const voice = getVoiceForDialect(dialect);
-    if (voice) utterance.voice = voice;
-  } else {
-    const lang = currentLanguage === 'jp' ? 'ja' : 'pt';
-    utterance.lang = currentLanguage === 'jp' ? 'ja-JP' : 'pt-BR';
-    const voice = getBestVoice(lang);
-    if (voice) utterance.voice = voice;
-  }
-
+  utterance.lang = langCode;
   utterance.rate = (dialect || currentLanguage === 'pt') ? 0.75 : 0.85;
   utterance.pitch = 1.0;
+  utterance.volume = 1.0;
 
-  utterance.onstart = () => btn && btn.classList.add('playing');
-  utterance.onend = () => btn && btn.classList.remove('playing');
+  // Try to find matching voice
+  const voice = findVoice(langCode);
+  if (voice) {
+    utterance.voice = voice;
+  }
+
+  // Visual feedback
+  if (btn) btn.classList.add('playing');
+
+  utterance.onend = () => {
+    if (btn) btn.classList.remove('playing');
+  };
   utterance.onerror = (e) => {
     if (btn) btn.classList.remove('playing');
-    if (e.error !== 'canceled' && e.error !== 'interrupted') {
-      console.warn('TTS error:', e.error);
+    if (e.error === 'language-unavailable' || e.error === 'voice-unavailable') {
+      // Retry without specific voice, just lang
+      const retry = new SpeechSynthesisUtterance(text);
+      retry.lang = langCode;
+      retry.rate = 0.75;
+      retry.onend = () => { if (btn) btn.classList.remove('playing'); };
+      retry.onerror = () => { if (btn) btn.classList.remove('playing'); };
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(retry);
     }
   };
 
-  window.speechSynthesis.speak(utterance);
+  // iOS fix: small delay after cancel, then speak
+  setTimeout(() => {
+    window.speechSynthesis.speak(utterance);
+  }, 50);
 }
+
+// Remove old functions
+function getBestVoice() { return null; }
+function getVoiceForDialect() { return null; }
+function loadVoices() { return ensureVoices(); }
 
 // ═══════════════════════════════════════════════════
 //  Word View
