@@ -113,6 +113,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC
 .popup-content strong { color: var(--accent); }
 .popup-loading { text-align: center; padding: 20px; color: var(--text-secondary); }
 
+/* Floating lookup button for phrase selection */
+.lookup-float { position: fixed; z-index: 1999; background: var(--accent); color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 16px rgba(0,0,0,0.25); animation: popIn 0.2s ease; user-select: none; white-space: nowrap; }
+.lookup-float:hover { background: var(--accent-hover); transform: translateY(-1px); }
+
 /* Buttons */
 .btn-row { display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
 .btn { padding: 11px 26px; border: none; border-radius: 28px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 5px; }
@@ -173,6 +177,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC
     </div>
   </section>
 </main>
+
+<!-- Floating Lookup Button -->
+<div id="lookup-float" class="lookup-float" style="display:none;" onclick="lookupSelection()">🔍 查询</div>
 
 <!-- Word Lookup Popup -->
 <div id="word-popup" class="word-popup" style="display:none;">
@@ -263,18 +270,66 @@ function showToast(msg) { const t = document.createElement('div'); t.className='
 function esc(str) { if(!str) return ''; return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 // ═══════════════════════════════════════════════════
-//  Audio (Web Speech API)
+//  Audio (Web Speech API) — with voice selection
 // ═══════════════════════════════════════════════════
-function speakWord(text, btn) {
+let _voicesLoaded = false;
+let _availableVoices = [];
+
+function loadVoices() {
+  return new Promise((resolve) => {
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0) { _availableVoices = voices; _voicesLoaded = true; resolve(voices); return; }
+    window.speechSynthesis.onvoiceschanged = () => {
+      _availableVoices = window.speechSynthesis.getVoices();
+      _voicesLoaded = true;
+      resolve(_availableVoices);
+    };
+  });
+}
+
+function getBestVoice(langPrefix) {
+  // Priority: exact match > starts-with match > contains match > any
+  const voices = _availableVoices;
+  // 1. Exact lang match
+  let voice = voices.find(v => v.lang === langPrefix);
+  // 2. Starts with lang prefix (e.g. 'pt-BR' for langPrefix='pt')
+  if (!voice) voice = voices.find(v => v.lang.startsWith(langPrefix + '-'));
+  // 3. Contains lang code
+  if (!voice) voice = voices.find(v => v.lang.includes(langPrefix));
+  // 4. For Portuguese specifically: try broader search
+  if (!voice && langPrefix === 'pt') {
+    voice = voices.find(v => v.lang.startsWith('pt'));
+  }
+  return voice || null;
+}
+
+async function speakWord(text, btn) {
   if (!window.speechSynthesis) { showToast('浏览器不支持语音合成'); return; }
   window.speechSynthesis.cancel();
-  const lang = currentLanguage === 'jp' ? 'ja-JP' : 'pt-BR';
+
+  // Load voices if needed
+  if (!_voicesLoaded) await loadVoices();
+
+  const lang = currentLanguage === 'jp' ? 'ja' : 'pt';
+  const voice = getBestVoice(lang);
+
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = lang;
-  utterance.rate = 0.85;
+  utterance.lang = currentLanguage === 'jp' ? 'ja-JP' : 'pt-BR';
+  if (voice) utterance.voice = voice;
+
+  // Slower rate for Portuguese for clearer pronunciation
+  utterance.rate = currentLanguage === 'jp' ? 0.85 : 0.75;
+  utterance.pitch = 1.0;
+
   utterance.onstart = () => btn && btn.classList.add('playing');
   utterance.onend = () => btn && btn.classList.remove('playing');
-  utterance.onerror = () => btn && btn.classList.remove('playing');
+  utterance.onerror = (e) => {
+    if (btn) btn.classList.remove('playing');
+    if (e.error !== 'canceled' && e.error !== 'interrupted') {
+      console.warn('TTS error:', e.error);
+    }
+  };
+
   window.speechSynthesis.speak(utterance);
 }
 
@@ -347,14 +402,11 @@ function renderArticle(data) {
   const region = data.region ? `<span class="article-region">📍 ${esc(data.region)}</span>` : '';
   const levelBadge = data.level ? `<span class="level-badge" style="margin-left:6px;">${esc(data.level)}</span>` : '';
 
-  // Make each word clickable for lookup
-  const clickableContent = makeWordsClickable(data.content);
-
   container.innerHTML = `
     <div class="article-card">
       <h2 class="article-title">${esc(data.title)}${levelBadge}</h2>
       ${region}
-      <div class="article-body">${clickableContent}</div>
+      <div class="article-body" id="article-body">${esc(data.content)}</div>
       <div id="summary-area"></div>
     </div>
   `;
@@ -364,53 +416,79 @@ function renderArticle(data) {
   }
 }
 
-function makeWordsClickable(text) {
-  if (!text) return '';
-  // Split by whitespace and punctuation boundaries, wrap each word
-  const isJP = currentLanguage === 'jp';
-  if (isJP) {
-    // For Japanese: wrap meaningful character sequences
-    return text.replace(/([\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\u3005]+)/g, (match) => {
-      return match.split('').map(ch => {
-        if (/[\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\u3005]/.test(ch)) {
-          return `<span class="clickable-word" onclick="lookupWord('${esc(ch)}', event)" title="点击查看释义">${ch}</span>`;
-        }
-        return ch;
-      }).join('');
-    });
-  } else {
-    // For Portuguese: wrap each word
-    return text.replace(/([A-Za-zÀ-ÿ]+)/g, (match) => {
-      return `<span class="clickable-word" onclick="lookupWord('${esc(match)}', event)" title="Click para ver significado">${match}</span>`;
-    });
-  }
+// ═══════════════════════════════════════════════════
+//  Phrase Selection & Lookup (replaces per-word click)
+// ═══════════════════════════════════════════════════
+let _selectedText = '';
+let _selectionRange = null;
+
+function showLookupFloat(x, y) {
+  const btn = document.getElementById('lookup-float');
+  btn.style.left = Math.min(x + 10, window.innerWidth - 120) + 'px';
+  btn.style.top = (y - 40) + 'px';
+  btn.style.display = 'block';
 }
 
-// ═══════════════════════════════════════════════════
-//  Word Lookup Popup
-// ═══════════════════════════════════════════════════
-async function lookupWord(word, event) {
-  event.stopPropagation();
+function hideLookupFloat() {
+  document.getElementById('lookup-float').style.display = 'none';
+}
+
+// Detect text selection in the article body
+document.addEventListener('mouseup', (e) => {
+  setTimeout(() => {
+    const sel = window.getSelection();
+    const text = sel ? sel.toString().trim() : '';
+    const articleBody = document.getElementById('article-body');
+
+    if (text.length > 0 && articleBody && articleBody.contains(sel.anchorNode)) {
+      _selectedText = text;
+      _selectionRange = sel.getRangeAt(0);
+      const rect = sel.getRangeAt(0).getBoundingClientRect();
+      showLookupFloat(rect.right, rect.top);
+    } else if (!e.target.closest('#lookup-float') && !e.target.closest('#word-popup')) {
+      // Delay hide to allow click on float button
+      setTimeout(() => {
+        if (_selectedText === text || !window.getSelection().toString().trim()) {
+          hideLookupFloat();
+        }
+      }, 200);
+    }
+  }, 10);
+});
+
+// On mobile: also support selection change
+document.addEventListener('selectionchange', () => {
+  const sel = window.getSelection();
+  const text = sel ? sel.toString().trim() : '';
+  const articleBody = document.getElementById('article-body');
+  if (text.length > 0 && articleBody && sel.anchorNode && articleBody.contains(sel.anchorNode)) {
+    _selectedText = text;
+    _selectionRange = sel.getRangeAt(0);
+    const rect = sel.getRangeAt(0).getBoundingClientRect();
+    showLookupFloat(rect.right, rect.top);
+  }
+});
+
+// Look up the selected phrase
+async function lookupSelection() {
+  if (!_selectedText) return;
+  hideLookupFloat();
+
   const popup = document.getElementById('word-popup');
   const popupWord = document.getElementById('popup-word');
   const popupContent = document.getElementById('popup-content');
 
-  // Position popup near click
-  const x = Math.min(event.clientX, window.innerWidth - 400);
-  const y = Math.min(event.clientY + 20, window.innerHeight - 300);
-  popup.style.left = x + 'px';
-  popup.style.top = y + 'px';
+  // Position popup centered
+  popup.style.left = Math.max(10, (window.innerWidth - 380) / 2) + 'px';
+  popup.style.top = Math.max(50, window.innerHeight * 0.15) + 'px';
   popup.style.display = 'block';
 
-  popupWord.textContent = '🔍 ' + word;
+  popupWord.textContent = '🔍 ' + _selectedText;
   popupContent.innerHTML = '<div class="popup-loading"><div class="spinner" style="width:24px;height:24px;"></div><p style="margin-top:8px">查询中...</p></div>';
 
-  // Highlight clicked word
-  if (event.target) event.target.classList.add('looked-up');
-
   try {
-    const ctx = articleData ? articleData.content.substring(0, 200) : '';
-    const result = await apiCall('/api/lookup-word', { language: currentLanguage, word, context: ctx });
+    const ctx = articleData ? articleData.content.substring(0, 300) : '';
+    const result = await apiCall('/api/lookup-word', { language: currentLanguage, word: _selectedText, context: ctx });
     popupContent.innerHTML = result.lookup
       .replace(/【(.+?)】/g, '<strong>【$1】</strong>')
       .replace(/\n/g, '<br>');
@@ -426,7 +504,7 @@ function closePopup() {
 // Close popup on outside click
 document.addEventListener('click', (e) => {
   const popup = document.getElementById('word-popup');
-  if (popup.style.display === 'block' && !popup.contains(e.target) && !e.target.classList.contains('clickable-word')) {
+  if (popup.style.display === 'block' && !popup.contains(e.target) && e.target.id !== 'lookup-float') {
     closePopup();
   }
 });
