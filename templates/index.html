@@ -5,759 +5,455 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>双语学习 · 日本語 & Português</title>
 <style>
-/* ═══════════════════════════════════════════════════════════════════
-   CSS Custom Properties — Theme System
-   ═══════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════
+   Theme System
+   ═══════════════════════════════════════════════════════ */
 :root {
-  /* Japanese theme (default) */
-  --bg: #faf6f1;
-  --bg-card: #ffffff;
-  --text: #2c2416;
-  --text-secondary: #6b5e4a;
-  --accent: #c84b31;
-  --accent-hover: #a63a24;
-  --accent-light: #fdf0eb;
-  --border: #e8d5c4;
-  --shadow: 0 2px 12px rgba(0,0,0,0.06);
-  --tag-bg: #f0ebe3;
-  --header-bg: linear-gradient(135deg, #2d1810 0%, #4a2c1a 50%, #6b3a2a 100%);
-  --header-text: #f5e6d3;
-  --lang-badge-bg: #c84b31;
-  --lang-badge-text: #fff;
-  --pos-color: #8b6914;
-  --reading-color: #6b5e4a;
-  --example-bg: #faf7f2;
-  --tab-active-bg: #fff;
-  --tab-active-border: #c84b31;
-  --flag-emoji: "🇯🇵";
+  --bg: #faf6f1; --bg-card: #fff; --text: #2c2416; --text-secondary: #6b5e4a;
+  --accent: #c84b31; --accent-hover: #a63a24; --accent-light: #fdf0eb;
+  --border: #e8d5c4; --shadow: 0 2px 12px rgba(0,0,0,0.06);
+  --tag-bg: #f0ebe3; --header-bg: linear-gradient(135deg, #2d1810 0%, #4a2c1a 50%, #6b3a2a 100%);
+  --header-text: #f5e6d3; --lang-badge-bg: #c84b31; --lang-badge-text: #fff;
+  --pos-color: #8b6914; --reading-color: #6b5e4a; --example-bg: #faf7f2;
+  --tab-active-bg: #fff; --tab-active-border: #c84b31;
+  --popup-bg: #fff; --popup-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  --audio-btn-bg: #f0ebe3; --audio-btn-hover: #e8d5c4;
+  --level-active-bg: #c84b31; --level-active-text: #fff;
+  --pill-bg: #f0ebe3; --pill-hover: #e8d5c4;
 }
-
 [data-theme="pt"] {
-  --bg: #f0f7f4;
-  --bg-card: #ffffff;
-  --text: #1a3c2a;
-  --text-secondary: #4a6b5a;
-  --accent: #1a7a4c;
-  --accent-hover: #145e3a;
-  --accent-light: #e8f5ee;
-  --border: #c8e0d0;
-  --shadow: 0 2px 12px rgba(0,0,0,0.06);
-  --tag-bg: #e0efe8;
-  --header-bg: linear-gradient(135deg, #0a2e1a 0%, #14522a 50%, #1a7a4c 100%);
-  --header-text: #d4f0e0;
-  --lang-badge-bg: #1a7a4c;
-  --lang-badge-text: #fff;
-  --pos-color: #1a7a4c;
-  --reading-color: #4a6b5a;
-  --example-bg: #f4faf7;
-  --tab-active-bg: #fff;
-  --tab-active-border: #1a7a4c;
-  --flag-emoji: "🇧🇷";
+  --bg: #f0f7f4; --bg-card: #fff; --text: #1a3c2a; --text-secondary: #4a6b5a;
+  --accent: #1a7a4c; --accent-hover: #145e3a; --accent-light: #e8f5ee;
+  --border: #c8e0d0; --shadow: 0 2px 12px rgba(0,0,0,0.06);
+  --tag-bg: #e0efe8; --header-bg: linear-gradient(135deg, #0a2e1a 0%, #14522a 50%, #1a7a4c 100%);
+  --header-text: #d4f0e0; --lang-badge-bg: #1a7a4c; --lang-badge-text: #fff;
+  --pos-color: #1a7a4c; --reading-color: #4a6b5a; --example-bg: #f4faf7;
+  --tab-active-bg: #fff; --tab-active-border: #1a7a4c;
+  --popup-bg: #fff; --popup-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  --audio-btn-bg: #e0efe8; --audio-btn-hover: #c8e0d0;
+  --level-active-bg: #1a7a4c; --level-active-text: #fff;
+  --pill-bg: #e0efe8; --pill-hover: #c8e0d0;
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   Base Styles
-   ═══════════════════════════════════════════════════════════════════ */
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Noto Sans JP", Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Noto Sans JP", Roboto, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  line-height: 1.6;
-}
-
-/* ═══════════════════════════════════════════════════════════════════
-   Header
-   ═══════════════════════════════════════════════════════════════════ */
-.header {
-  background: var(--header-bg);
-  color: var(--header-text);
-  padding: 24px 20px;
-  text-align: center;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-}
-
-.header h1 {
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin-bottom: 6px;
-  letter-spacing: 0.5px;
-}
-
-.header .subtitle {
-  font-size: 0.95rem;
-  opacity: 0.85;
-  margin-bottom: 16px;
-}
+/* Header */
+.header { background: var(--header-bg); color: var(--header-text); padding: 20px 20px 16px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+.header h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 2px; }
+.header .subtitle { font-size: 0.85rem; opacity: 0.8; margin-bottom: 12px; }
 
 /* Language Toggle */
-.lang-toggle {
-  display: inline-flex;
-  background: rgba(255,255,255,0.15);
-  border-radius: 30px;
-  padding: 4px;
-  backdrop-filter: blur(10px);
-}
-
-.lang-btn {
-  padding: 8px 24px;
-  border: none;
-  border-radius: 26px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  background: transparent;
-  color: var(--header-text);
-  opacity: 0.7;
-}
-
+.lang-toggle { display: inline-flex; background: rgba(255,255,255,0.12); border-radius: 28px; padding: 3px; }
+.lang-btn { padding: 7px 22px; border: none; border-radius: 26px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s; background: transparent; color: var(--header-text); opacity: 0.65; }
 .lang-btn:hover { opacity: 0.9; }
+.lang-btn.active { background: var(--lang-badge-bg); color: var(--lang-badge-text); opacity: 1; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
 
-.lang-btn.active {
-  background: var(--lang-badge-bg);
-  color: var(--lang-badge-text);
-  opacity: 1;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
+/* Level Selector */
+.level-bar { max-width: 700px; margin: 10px auto 0; padding: 0 10px; display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+.level-pill { padding: 5px 14px; border: 1.5px solid var(--border); border-radius: 18px; cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: all 0.25s; background: var(--pill-bg); color: var(--text-secondary); white-space: nowrap; }
+.level-pill:hover { border-color: var(--accent); color: var(--accent); }
+.level-pill.active { background: var(--level-active-bg); color: var(--level-active-text); border-color: var(--level-active-bg); box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
 
-/* ═══════════════════════════════════════════════════════════════════
-   Tab Navigation
-   ═══════════════════════════════════════════════════════════════════ */
-.tab-nav {
-  display: flex;
-  gap: 0;
-  max-width: 800px;
-  margin: 24px auto 0;
-  padding: 0 20px;
-}
-
-.tab-btn {
-  flex: 1;
-  padding: 14px 20px;
-  border: 2px solid var(--border);
-  background: var(--bg);
-  color: var(--text-secondary);
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-align: center;
-}
-
+/* Tab Nav */
+.tab-nav { display: flex; gap: 0; max-width: 800px; margin: 16px auto 0; padding: 0 20px; }
+.tab-btn { flex: 1; padding: 12px 20px; border: 2px solid var(--border); background: var(--bg); color: var(--text-secondary); font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.3s; text-align: center; }
 .tab-btn:first-child { border-radius: 12px 0 0 12px; }
 .tab-btn:last-child { border-radius: 0 12px 12px 0; border-left: none; }
+.tab-btn.active { background: var(--tab-active-bg); color: var(--accent); border-color: var(--tab-active-border); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
 
-.tab-btn.active {
-  background: var(--tab-active-bg);
-  color: var(--accent);
-  border-color: var(--tab-active-border);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
+/* Container */
+.container { max-width: 960px; margin: 0 auto; padding: 20px; }
 
-/* ═══════════════════════════════════════════════════════════════════
-   Main Content
-   ═══════════════════════════════════════════════════════════════════ */
-.container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-/* Loading & Empty States */
-.loading, .empty-state {
-  text-align: center;
-  padding: 60px 20px;
-  color: var(--text-secondary);
-}
-
-.loading .spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin: 0 auto 16px;
-}
-
+/* Loading */
+.loading { text-align: center; padding: 60px 20px; color: var(--text-secondary); }
+.spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
 
-/* ═══════════════════════════════════════════════════════════════════
-   Word Cards
-   ═══════════════════════════════════════════════════════════════════ */
-.word-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
-}
+/* Word Grid */
+.word-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+.word-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; box-shadow: var(--shadow); transition: transform 0.2s, box-shadow 0.2s; position: relative; }
+.word-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+.word-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.word-text { font-size: 1.35rem; font-weight: 700; color: var(--text); }
+.word-reading { font-size: 0.85rem; color: var(--reading-color); }
+.word-pos { display: inline-block; font-size: 0.75rem; background: var(--tag-bg); color: var(--pos-color); padding: 2px 10px; border-radius: 16px; font-weight: 600; margin: 6px 0 10px; }
+.word-meaning { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed var(--border); }
+.example-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--accent); font-weight: 600; margin-bottom: 3px; }
+.example-text { font-size: 0.9rem; background: var(--example-bg); padding: 10px 12px; border-radius: 8px; line-height: 1.5; margin-bottom: 5px; }
+.example-cn { font-size: 0.82rem; color: var(--text-secondary); font-style: italic; }
+.regional-note { margin-top: 8px; padding: 6px 10px; background: var(--accent-light); border-left: 3px solid var(--accent); border-radius: 0 6px 6px 0; font-size: 0.78rem; color: var(--text-secondary); }
 
-.word-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: var(--shadow);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
+/* Audio Button */
+.audio-btn { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--audio-btn-bg); cursor: pointer; transition: all 0.2s; font-size: 0.9rem; flex-shrink: 0; }
+.audio-btn:hover { background: var(--audio-btn-hover); transform: scale(1.1); }
+.audio-btn.playing { background: var(--accent); color: #fff; animation: pulse 0.6s infinite; }
+@keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
 
-.word-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-}
+/* Article */
+.article-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 30px; box-shadow: var(--shadow); margin-bottom: 20px; }
+.article-title { font-size: 1.4rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.article-region { display: inline-block; font-size: 0.75rem; background: var(--tag-bg); color: var(--accent); padding: 3px 10px; border-radius: 16px; font-weight: 600; margin-bottom: 14px; }
+.article-body { font-size: 1.05rem; line-height: 2.2; color: var(--text); }
+.article-body .clickable-word { cursor: pointer; padding: 1px 3px; border-radius: 3px; transition: background 0.15s; border-bottom: 1px dotted var(--border); }
+.article-body .clickable-word:hover { background: var(--accent-light); }
+.article-body .clickable-word.looked-up { background: var(--accent-light); }
 
-.word-card .word-main {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin-bottom: 4px;
-}
+.summary-box { background: var(--accent-light); border: 1px solid var(--accent); border-radius: 10px; padding: 18px; margin-top: 18px; }
+.summary-box h3 { font-size: 0.95rem; color: var(--accent); margin-bottom: 6px; }
+.summary-box p { font-size: 0.9rem; color: var(--text); line-height: 1.7; }
 
-.word-card .word-text {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--text);
-}
+/* Word Popup */
+.word-popup { position: fixed; z-index: 2000; background: var(--popup-bg); border-radius: 14px; box-shadow: var(--popup-shadow); padding: 20px; min-width: 280px; max-width: 380px; animation: popIn 0.25s ease; border: 1px solid var(--border); }
+@keyframes popIn { from { opacity:0; transform: scale(0.9); } to { opacity:1; transform: scale(1); } }
+.popup-close { position: absolute; top: 8px; right: 12px; border: none; background: none; font-size: 1.2rem; cursor: pointer; color: var(--text-secondary); padding: 4px; }
+.popup-word { font-size: 1.2rem; font-weight: 700; margin-bottom: 12px; color: var(--accent); }
+.popup-content { font-size: 0.88rem; line-height: 1.7; color: var(--text); }
+.popup-content strong { color: var(--accent); }
+.popup-loading { text-align: center; padding: 20px; color: var(--text-secondary); }
 
-.word-card .word-reading {
-  font-size: 0.9rem;
-  color: var(--reading-color);
-}
+/* Buttons */
+.btn-row { display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+.btn { padding: 11px 26px; border: none; border-radius: 28px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 5px; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.btn-secondary { background: var(--bg-card); color: var(--accent); border: 2px solid var(--accent); }
+.btn-secondary:hover { background: var(--accent-light); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-small { padding: 7px 16px; font-size: 0.8rem; border-radius: 20px; }
 
-.word-card .word-pos {
-  display: inline-block;
-  font-size: 0.78rem;
-  background: var(--tag-bg);
-  color: var(--pos-color);
-  padding: 2px 10px;
-  border-radius: 20px;
-  font-weight: 600;
-  margin: 6px 0 10px;
-}
+/* Toast */
+.toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #e74c3c; color: #fff; padding: 10px 22px; border-radius: 8px; font-weight: 600; z-index: 3000; animation: slideDown 0.3s; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+@keyframes slideDown { from { transform: translateX(-50%) translateY(-60px); opacity:0; } to { transform: translateX(-50%) translateY(0); opacity:1; } }
 
-.word-card .word-meaning {
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-  margin-bottom: 10px;
-  padding-bottom: 10px;
-  border-bottom: 1px dashed var(--border);
-}
+/* Level Badge */
+.level-badge { display: inline-block; font-size: 0.72rem; background: var(--accent); color: #fff; padding: 2px 9px; border-radius: 10px; margin-left: 6px; font-weight: 700; }
 
-.word-card .example-label {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--accent);
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.word-card .example-text {
-  font-size: 0.92rem;
-  background: var(--example-bg);
-  padding: 10px 12px;
-  border-radius: 8px;
-  line-height: 1.5;
-  margin-bottom: 6px;
-}
-
-.word-card .example-cn {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  font-style: italic;
-}
-
-.word-card .regional-note {
-  margin-top: 8px;
-  padding: 6px 10px;
-  background: var(--accent-light);
-  border-left: 3px solid var(--accent);
-  border-radius: 0 6px 6px 0;
-  font-size: 0.82rem;
-  color: var(--text-secondary);
-}
-
-/* ═══════════════════════════════════════════════════════════════════
-   Article View
-   ═══════════════════════════════════════════════════════════════════ */
-.article-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 32px;
-  box-shadow: var(--shadow);
-  margin-bottom: 20px;
-}
-
-.article-card .article-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: 8px;
-  line-height: 1.4;
-}
-
-.article-card .article-region {
-  display: inline-block;
-  font-size: 0.78rem;
-  background: var(--tag-bg);
-  color: var(--accent);
-  padding: 3px 12px;
-  border-radius: 20px;
-  font-weight: 600;
-  margin-bottom: 16px;
-}
-
-.article-card .article-body {
-  font-size: 1.05rem;
-  line-height: 2;
-  color: var(--text);
-  white-space: pre-wrap;
-}
-
-.summary-box {
-  background: var(--accent-light);
-  border: 1px solid var(--accent);
-  border-radius: 10px;
-  padding: 20px;
-  margin-top: 20px;
-}
-
-.summary-box h3 {
-  font-size: 1rem;
-  color: var(--accent);
-  margin-bottom: 8px;
-}
-
-.summary-box p {
-  font-size: 0.95rem;
-  color: var(--text);
-  line-height: 1.7;
-}
-
-/* ═══════════════════════════════════════════════════════════════════
-   Buttons
-   ═══════════════════════════════════════════════════════════════════ */
-.btn-row {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  margin-top: 24px;
-  flex-wrap: wrap;
-}
-
-.btn {
-  padding: 12px 28px;
-  border: none;
-  border-radius: 30px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.btn-primary {
-  background: var(--accent);
-  color: #fff;
-}
-
-.btn-primary:hover {
-  background: var(--accent-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-.btn-secondary {
-  background: var(--bg-card);
-  color: var(--accent);
-  border: 2px solid var(--accent);
-}
-
-.btn-secondary:hover {
-  background: var(--accent-light);
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* ═══════════════════════════════════════════════════════════════════
-   Error Toast
-   ═══════════════════════════════════════════════════════════════════ */
-.toast {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #e74c3c;
-  color: #fff;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  z-index: 1000;
-  animation: slideDown 0.3s ease;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-}
-
-@keyframes slideDown {
-  from { transform: translateX(-50%) translateY(-60px); opacity: 0; }
-  to { transform: translateX(-50%) translateY(0); opacity: 1; }
-}
-
-/* ═══════════════════════════════════════════════════════════════════
-   Responsive
-   ═══════════════════════════════════════════════════════════════════ */
+/* Responsive */
 @media (max-width: 640px) {
-  .header h1 { font-size: 1.4rem; }
+  .header h1 { font-size: 1.3rem; }
   .word-grid { grid-template-columns: 1fr; }
-  .article-card { padding: 20px; }
+  .article-card { padding: 18px; }
   .btn-row { flex-direction: column; align-items: center; }
-}
-
-/* ═══════════════════════════════════════════════════════════════════
-   Word Count Badge
-   ═══════════════════════════════════════════════════════════════════ */
-.word-count {
-  text-align: center;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  margin-bottom: 16px;
+  .level-pill { padding: 4px 10px; font-size: 0.72rem; }
+  .word-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-width: 90vw; }
 }
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════════════════════
-     Header with Language Toggle
-     ═══════════════════════════════════════════════════════════════ -->
 <header class="header">
   <h1>🌐 双语学习 · Bilingual Learning</h1>
-  <p class="subtitle">通过单词和文章，掌握地道表达</p>
+  <p class="subtitle">JLPT / CAPLE 分级 · 单词 & 文章</p>
   <div class="lang-toggle">
-    <button class="lang-btn active" data-lang="jp" onclick="switchLanguage('jp')">
-      🇯🇵 日本語
-    </button>
-    <button class="lang-btn" data-lang="pt" onclick="switchLanguage('pt')">
-      🇧🇷 Português
-    </button>
+    <button class="lang-btn active" data-lang="jp" onclick="switchLanguage('jp')">🇯🇵 日本語</button>
+    <button class="lang-btn" data-lang="pt" onclick="switchLanguage('pt')">🇧🇷 Português</button>
   </div>
+  <div class="level-bar" id="level-bar"></div>
 </header>
 
-<!-- ═══════════════════════════════════════════════════════════════
-     Tab Navigation: Words / Articles
-     ═══════════════════════════════════════════════════════════════ -->
 <nav class="tab-nav">
-  <button class="tab-btn active" data-tab="words" onclick="switchTab('words')">
-    📝 单词 Words
-  </button>
-  <button class="tab-btn" data-tab="articles" onclick="switchTab('articles')">
-    📰 文章 Articles
-  </button>
+  <button class="tab-btn active" data-tab="words" onclick="switchTab('words')">📝 单词</button>
+  <button class="tab-btn" data-tab="articles" onclick="switchTab('articles')">📰 文章</button>
 </nav>
 
-<!-- ═══════════════════════════════════════════════════════════════
-     Main Content
-     ═══════════════════════════════════════════════════════════════ -->
 <main class="container">
-
-  <!-- Words View -->
   <section id="words-view">
-    <div class="word-count" id="word-count"></div>
     <div class="word-grid" id="word-grid"></div>
     <div class="btn-row">
-      <button class="btn btn-primary" id="refresh-words-btn" onclick="refreshWords()">
-        🔄 换一批
-      </button>
+      <button class="btn btn-primary" id="refresh-words-btn" onclick="refreshWords()">🔄 换一批</button>
     </div>
   </section>
-
-  <!-- Articles View -->
   <section id="articles-view" style="display:none;">
     <div id="article-content"></div>
     <div class="btn-row">
-      <button class="btn btn-secondary" id="summary-btn" onclick="generateSummary()">
-        📋 查看概述
-      </button>
-      <button class="btn btn-primary" id="refresh-article-btn" onclick="refreshArticle()">
-        🔄 换一篇
-      </button>
+      <button class="btn btn-secondary btn-small" id="summary-btn" onclick="generateSummary()">📋 查看概述</button>
+      <button class="btn btn-primary btn-small" id="refresh-article-btn" onclick="refreshArticle()">🔄 换一篇</button>
     </div>
   </section>
-
 </main>
 
-<!-- ═══════════════════════════════════════════════════════════════
-     JavaScript — Application Logic
-     ═══════════════════════════════════════════════════════════════ -->
+<!-- Word Lookup Popup -->
+<div id="word-popup" class="word-popup" style="display:none;">
+  <button class="popup-close" onclick="closePopup()">✕</button>
+  <div class="popup-word" id="popup-word"></div>
+  <div class="popup-content" id="popup-content"></div>
+</div>
+
 <script>
-// ── State ──────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════
+//  State
+// ═══════════════════════════════════════════════════
 let currentLanguage = 'jp';
 let currentTab = 'words';
-let wordsData = null;
-let articleData = null;
-let summaryText = '';
-let isLoading = false;
+let currentLevel = 'N3';
+let wordsData = null, articleData = null, summaryText = '', isLoading = false;
 
-// ── Language Switching ──────────────────────────────────────────────
+const jpLevels = ['N5','N4','N3','N2','N1'];
+const ptLevels = ['A1','A2','B1','B2','C1','C2'];
+
+// ═══════════════════════════════════════════════════
+//  Level Selector
+// ═══════════════════════════════════════════════════
+function renderLevelBar() {
+  const levels = currentLanguage === 'jp' ? jpLevels : ptLevels;
+  const bar = document.getElementById('level-bar');
+  bar.innerHTML = levels.map(l =>
+    `<button class="level-pill${l === currentLevel ? ' active' : ''}" onclick="setLevel('${l}')">${l}</button>`
+  ).join('');
+}
+
+function setLevel(level) {
+  if (isLoading || level === currentLevel) return;
+  currentLevel = level;
+  renderLevelBar();
+  // Reset and reload
+  wordsData = null; articleData = null; summaryText = '';
+  document.getElementById('summary-btn').textContent = '📋 查看概述';
+  loadCurrentTab();
+}
+
+renderLevelBar();
+
+// ═══════════════════════════════════════════════════
+//  Language Switching
+// ═══════════════════════════════════════════════════
 function switchLanguage(lang) {
   if (isLoading) return;
   currentLanguage = lang;
-
-  // Update toggle buttons
-  document.querySelectorAll('.lang-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.lang === lang);
-  });
-
-  // Update theme
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
   document.documentElement.setAttribute('data-theme', lang === 'pt' ? 'pt' : '');
-
-  // Reset state
-  wordsData = null;
-  articleData = null;
-  summaryText = '';
-
-  // Reload current tab
+  currentLevel = lang === 'jp' ? 'N3' : 'B1';
+  wordsData = null; articleData = null; summaryText = '';
+  document.getElementById('summary-btn').textContent = '📋 查看概述';
+  renderLevelBar();
   loadCurrentTab();
 }
 
-// ── Tab Switching ───────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════
+//  Tab Switching
+// ═══════════════════════════════════════════════════
 function switchTab(tab) {
   currentTab = tab;
-
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.tab === tab);
-  });
-
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.getElementById('words-view').style.display = tab === 'words' ? 'block' : 'none';
   document.getElementById('articles-view').style.display = tab === 'articles' ? 'block' : 'none';
-
   loadCurrentTab();
 }
 
-// ── Load Current Tab ────────────────────────────────────────────────
 function loadCurrentTab() {
-  if (currentTab === 'words') {
-    if (wordsData) {
-      renderWords(wordsData);
-    } else {
-      refreshWords();
-    }
-  } else {
-    if (articleData) {
-      renderArticle(articleData);
-    } else {
-      refreshArticle();
-    }
-  }
+  if (currentTab === 'words') wordsData ? renderWords(wordsData) : refreshWords();
+  else articleData ? renderArticle(articleData) : refreshArticle();
 }
 
-// ── API Helpers ─────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════
+//  API
+// ═══════════════════════════════════════════════════
 async function apiCall(endpoint, body) {
-  const resp = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (!resp.ok) {
-    const err = await resp.json().catch(() => ({ error: `HTTP ${resp.status}` }));
-    throw new Error(err.error || `HTTP ${resp.status}`);
-  }
+  const resp = await fetch(endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+  if (!resp.ok) { const err = await resp.json().catch(()=>({error:`HTTP ${resp.status}`})); throw new Error(err.error); }
   const data = await resp.json();
-  if (!data.success) throw new Error(data.error || 'Unknown error');
+  if (!data.success) throw new Error(data.error||'Unknown error');
   return data;
 }
 
-// ── Toast ───────────────────────────────────────────────────────────
-function showToast(msg) {
-  const toast = document.createElement('div');
-  toast.className = 'toast';
-  toast.textContent = msg;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 3000);
+function setLoading(loading) { isLoading = loading; document.querySelectorAll('.btn').forEach(b => b.disabled = loading); }
+function showToast(msg) { const t = document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),3000); }
+function esc(str) { if(!str) return ''; return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ═══════════════════════════════════════════════════
+//  Audio (Web Speech API)
+// ═══════════════════════════════════════════════════
+function speakWord(text, btn) {
+  if (!window.speechSynthesis) { showToast('浏览器不支持语音合成'); return; }
+  window.speechSynthesis.cancel();
+  const lang = currentLanguage === 'jp' ? 'ja-JP' : 'pt-BR';
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = lang;
+  utterance.rate = 0.85;
+  utterance.onstart = () => btn && btn.classList.add('playing');
+  utterance.onend = () => btn && btn.classList.remove('playing');
+  utterance.onerror = () => btn && btn.classList.remove('playing');
+  window.speechSynthesis.speak(utterance);
 }
 
-// ═══════════════════════════════════════════════════════════════════
-//  WORD VIEW
-// ═══════════════════════════════════════════════════════════════════
-
-function setLoading(loading) {
-  isLoading = loading;
-  document.querySelectorAll('.btn').forEach(b => b.disabled = loading);
-}
-
+// ═══════════════════════════════════════════════════
+//  Word View
+// ═══════════════════════════════════════════════════
 async function refreshWords() {
   if (isLoading) return;
   setLoading(true);
-
   const grid = document.getElementById('word-grid');
-  grid.innerHTML = '<div class="loading"><div class="spinner"></div><p>正在生成单词...</p></div>';
-
+  grid.innerHTML = '<div class="loading"><div class="spinner"></div><p>正在生成 ' + currentLevel + ' 级别单词...</p></div>';
   try {
-    const result = await apiCall('/api/generate-words', { language: currentLanguage });
+    const result = await apiCall('/api/generate-words', { language: currentLanguage, level: currentLevel });
     wordsData = result.data.words;
     renderWords(wordsData);
   } catch (err) {
-    console.error(err);
-    grid.innerHTML = `<div class="empty-state"><p>❌ 生成失败：${err.message}</p><p style="margin-top:8px;font-size:0.85rem">请确保后端已启动且 DEEPSEEK_API_KEY 已配置</p></div>`;
-  } finally {
-    setLoading(false);
-  }
+    grid.innerHTML = `<div class="loading"><p>❌ ${esc(err.message)}</p></div>`;
+  } finally { setLoading(false); }
 }
 
 function renderWords(words) {
   const grid = document.getElementById('word-grid');
-  const count = document.getElementById('word-count');
-  count.textContent = `共 ${words.length} 个单词`;
-
-  if (!words || words.length === 0) {
-    grid.innerHTML = '<div class="empty-state"><p>暂无单词数据</p></div>';
-    return;
-  }
-
-  grid.innerHTML = words.map((w, i) => {
-    const isJP = currentLanguage === 'jp';
-    let regionalHTML = '';
-    if (w.regional_note) {
-      regionalHTML = `<div class="regional-note">🌍 ${w.regional_note}</div>`;
-    }
-
+  if (!words || !words.length) { grid.innerHTML = '<div class="loading"><p>暂无数据</p></div>'; return; }
+  const isJP = currentLanguage === 'jp';
+  grid.innerHTML = words.map((w,i) => {
+    const regionalHTML = w.regional_note ? `<div class="regional-note">🌍 ${esc(w.regional_note)}</div>` : '';
+    const speakText = isJP ? w.word : w.word;
     return `
-      <div class="word-card" style="animation: fadeIn 0.${3+i}5s ease both">
-        <div class="word-main">
+    <div class="word-card" style="animation:fadeIn 0.${3+i}s ease both">
+      <div class="word-header">
+        <button class="audio-btn" onclick="event.stopPropagation();speakWord('${esc(speakText.replace(/'/g,"\\'"))}',this)" title="发音">🔊</button>
+        <div>
           <span class="word-text">${esc(w.word)}</span>
-          ${isJP ? `<span class="word-reading">${esc(w.reading || '')}</span>` : ''}
+          ${isJP ? `<span class="word-reading">${esc(w.reading||'')}</span>` : ''}
         </div>
-        <span class="word-pos">${esc(w.pos)}</span>
-        <div class="word-meaning">💡 ${esc(w.meaning_cn)}</div>
-        <div class="example-label">例句 Example</div>
-        <div class="example-text">${esc(isJP ? w.example_jp : w.example_pt)}</div>
-        <div class="example-cn">${esc(w.example_cn)}</div>
-        ${regionalHTML}
+        <span class="level-badge">${esc(currentLevel)}</span>
       </div>
-    `;
+      <span class="word-pos">${esc(w.pos)}</span>
+      <div class="word-meaning">💡 ${esc(w.meaning_cn)}</div>
+      <div class="example-label">📖 例句</div>
+      <div class="example-text">${esc(isJP ? w.example_jp : w.example_pt)}</div>
+      <div class="example-cn">${esc(w.example_cn)}</div>
+      ${regionalHTML}
+    </div>`;
   }).join('');
 }
 
-// ── Simple fade-in keyframes injected via JS ──
-const fadeStyle = document.createElement('style');
-fadeStyle.textContent = '@keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }';
-document.head.appendChild(fadeStyle);
-
-// ═══════════════════════════════════════════════════════════════════
-//  ARTICLE VIEW
-// ═══════════════════════════════════════════════════════════════════
-
+// ═══════════════════════════════════════════════════
+//  Article View
+// ═══════════════════════════════════════════════════
 async function refreshArticle() {
   if (isLoading) return;
   setLoading(true);
   summaryText = '';
-
-  const container = document.getElementById('article-content');
-  container.innerHTML = '<div class="loading"><div class="spinner"></div><p>正在获取文章...</p></div>';
-
-  // Reset summary button
-  const summaryBtn = document.getElementById('summary-btn');
-  summaryBtn.textContent = '📋 查看概述';
-  summaryBtn.disabled = false;
-
+  document.getElementById('summary-btn').textContent = '📋 查看概述';
+  const c = document.getElementById('article-content');
+  c.innerHTML = '<div class="loading"><div class="spinner"></div><p>正在获取 ' + currentLevel + ' 级别文章...</p></div>';
   try {
-    const result = await apiCall('/api/generate-article', { language: currentLanguage });
+    const result = await apiCall('/api/generate-article', { language: currentLanguage, level: currentLevel });
     articleData = result.data;
     renderArticle(articleData);
   } catch (err) {
-    console.error(err);
-    container.innerHTML = `<div class="empty-state"><p>❌ 获取文章失败：${err.message}</p></div>`;
-  } finally {
-    setLoading(false);
-  }
+    c.innerHTML = `<div class="loading"><p>❌ ${esc(err.message)}</p></div>`;
+  } finally { setLoading(false); }
 }
 
 function renderArticle(data) {
   const container = document.getElementById('article-content');
-  if (!data) {
-    container.innerHTML = '<div class="empty-state"><p>暂无文章</p></div>';
-    return;
-  }
+  if (!data) { container.innerHTML = '<div class="loading"><p>暂无文章</p></div>'; return; }
+  const region = data.region ? `<span class="article-region">📍 ${esc(data.region)}</span>` : '';
+  const levelBadge = data.level ? `<span class="level-badge" style="margin-left:6px;">${esc(data.level)}</span>` : '';
 
-  const regionBadge = data.region
-    ? `<span class="article-region">📍 ${esc(data.region)}</span>`
-    : '';
+  // Make each word clickable for lookup
+  const clickableContent = makeWordsClickable(data.content);
 
   container.innerHTML = `
     <div class="article-card">
-      <h2 class="article-title">${esc(data.title)}</h2>
-      ${regionBadge}
-      <div class="article-body">${esc(data.content)}</div>
+      <h2 class="article-title">${esc(data.title)}${levelBadge}</h2>
+      ${region}
+      <div class="article-body">${clickableContent}</div>
       <div id="summary-area"></div>
     </div>
   `;
 
   if (summaryText) {
-    document.getElementById('summary-area').innerHTML = `
-      <div class="summary-box">
-        <h3>📋 文章概述</h3>
-        <p>${esc(summaryText)}</p>
-      </div>
-    `;
+    document.getElementById('summary-area').innerHTML = `<div class="summary-box"><h3>📋 文章概述</h3><p>${esc(summaryText)}</p></div>`;
   }
 }
 
-async function generateSummary() {
-  if (!articleData) return;
-  const summaryBtn = document.getElementById('summary-btn');
+function makeWordsClickable(text) {
+  if (!text) return '';
+  // Split by whitespace and punctuation boundaries, wrap each word
+  const isJP = currentLanguage === 'jp';
+  if (isJP) {
+    // For Japanese: wrap meaningful character sequences
+    return text.replace(/([\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\u3005]+)/g, (match) => {
+      return match.split('').map(ch => {
+        if (/[\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\u3005]/.test(ch)) {
+          return `<span class="clickable-word" onclick="lookupWord('${esc(ch)}', event)" title="点击查看释义">${ch}</span>`;
+        }
+        return ch;
+      }).join('');
+    });
+  } else {
+    // For Portuguese: wrap each word
+    return text.replace(/([A-Za-zÀ-ÿ]+)/g, (match) => {
+      return `<span class="clickable-word" onclick="lookupWord('${esc(match)}', event)" title="Click para ver significado">${match}</span>`;
+    });
+  }
+}
 
-  summaryBtn.disabled = true;
-  summaryBtn.textContent = '⏳ 生成中...';
+// ═══════════════════════════════════════════════════
+//  Word Lookup Popup
+// ═══════════════════════════════════════════════════
+async function lookupWord(word, event) {
+  event.stopPropagation();
+  const popup = document.getElementById('word-popup');
+  const popupWord = document.getElementById('popup-word');
+  const popupContent = document.getElementById('popup-content');
+
+  // Position popup near click
+  const x = Math.min(event.clientX, window.innerWidth - 400);
+  const y = Math.min(event.clientY + 20, window.innerHeight - 300);
+  popup.style.left = x + 'px';
+  popup.style.top = y + 'px';
+  popup.style.display = 'block';
+
+  popupWord.textContent = '🔍 ' + word;
+  popupContent.innerHTML = '<div class="popup-loading"><div class="spinner" style="width:24px;height:24px;"></div><p style="margin-top:8px">查询中...</p></div>';
+
+  // Highlight clicked word
+  if (event.target) event.target.classList.add('looked-up');
 
   try {
-    const result = await apiCall('/api/summarize', {
-      language: currentLanguage,
-      title: articleData.title,
-      content: articleData.content,
-    });
-    summaryText = result.summary;
-
-    const summaryArea = document.getElementById('summary-area');
-    if (summaryArea) {
-      summaryArea.innerHTML = `
-        <div class="summary-box">
-          <h3>📋 文章概述</h3>
-          <p>${esc(summaryText)}</p>
-        </div>
-      `;
-    }
-
-    summaryBtn.textContent = '✅ 概述已生成';
+    const ctx = articleData ? articleData.content.substring(0, 200) : '';
+    const result = await apiCall('/api/lookup-word', { language: currentLanguage, word, context: ctx });
+    popupContent.innerHTML = result.lookup
+      .replace(/【(.+?)】/g, '<strong>【$1】</strong>')
+      .replace(/\n/g, '<br>');
   } catch (err) {
-    console.error(err);
-    showToast('生成概述失败：' + err.message);
-    summaryBtn.disabled = false;
-    summaryBtn.textContent = '📋 查看概述';
+    popupContent.innerHTML = `<p style="color:#e74c3c">❌ ${esc(err.message)}</p>`;
   }
 }
 
-// ── Escape HTML ─────────────────────────────────────────────────────
-function esc(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+function closePopup() {
+  document.getElementById('word-popup').style.display = 'none';
 }
 
-// ── Init ────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  loadCurrentTab();
+// Close popup on outside click
+document.addEventListener('click', (e) => {
+  const popup = document.getElementById('word-popup');
+  if (popup.style.display === 'block' && !popup.contains(e.target) && !e.target.classList.contains('clickable-word')) {
+    closePopup();
+  }
 });
-</script>
 
+// ═══════════════════════════════════════════════════
+//  Article Summary
+// ═══════════════════════════════════════════════════
+async function generateSummary() {
+  if (!articleData) return;
+  const btn = document.getElementById('summary-btn');
+  btn.disabled = true; btn.textContent = '⏳ 生成中...';
+  try {
+    const result = await apiCall('/api/summarize', { language: currentLanguage, title: articleData.title, content: articleData.content });
+    summaryText = result.summary;
+    const area = document.getElementById('summary-area');
+    if (area) area.innerHTML = `<div class="summary-box"><h3>📋 文章概述</h3><p>${esc(summaryText)}</p></div>`;
+    btn.textContent = '✅ 已生成';
+  } catch (err) {
+    showToast(err.message);
+    btn.disabled = false; btn.textContent = '📋 查看概述';
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  Init
+// ═══════════════════════════════════════════════════
+loadCurrentTab();
+</script>
 </body>
 </html>
