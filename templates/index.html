@@ -96,9 +96,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC
 .article-title { font-size: 1.4rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
 .article-region { display: inline-block; font-size: 0.75rem; background: var(--tag-bg); color: var(--accent); padding: 3px 10px; border-radius: 16px; font-weight: 600; margin-bottom: 14px; }
 .article-body { font-size: 1.05rem; line-height: 2.2; color: var(--text); }
-.article-body .clickable-word { cursor: pointer; padding: 1px 3px; border-radius: 3px; transition: background 0.15s; border-bottom: 1px dotted var(--border); }
-.article-body .clickable-word:hover { background: var(--accent-light); }
-.article-body .clickable-word.looked-up { background: var(--accent-light); }
+.article-body::selection { background: var(--accent-light); color: var(--text); }
 
 .summary-box { background: var(--accent-light); border: 1px solid var(--accent); border-radius: 10px; padding: 18px; margin-top: 18px; }
 .summary-box h3 { font-size: 0.95rem; color: var(--accent); margin-bottom: 6px; }
