@@ -376,13 +376,13 @@ function renderWords(words) {
     // Audio buttons: Japanese → single 🔊, Portuguese → 🇧🇷 + 🇵🇹
     const wordAudio = isJP
       ? `<button class="audio-btn" onclick="event.stopPropagation();speakWord('${wordSafe}',this)" title="发音">🔊</button>`
-      : `<button class="audio-btn-flag" onclick="event.stopPropagation();speakWord('${wordSafe}',this,'pt-BR')" title="巴西葡语">🇧🇷</button>
-         <button class="audio-btn-flag" onclick="event.stopPropagation();speakWord('${wordSafe}',this,'pt-PT')" title="欧洲葡语">🇵🇹</button>`;
+      : `<button class="audio-btn-flag" onclick="event.stopPropagation();speakWord('${wordSafe}',this,'pt-BR')" title="巴西葡萄牙语发音">🇧🇷</button>
+         <button class="audio-btn-flag" onclick="event.stopPropagation();speakWord('${wordSafe}',this,'pt-PT')" title="欧洲葡萄牙语发音">🇵🇹</button>`;
 
     const exAudio = isJP
       ? `<button class="audio-btn-sm" onclick="event.stopPropagation();speakWord('${exSafe}',this)" title="朗读例句">🔊</button>`
-      : `<button class="audio-btn-flag-sm" onclick="event.stopPropagation();speakWord('${exSafe}',this,'pt-BR')" title="巴西葡语">🇧🇷</button>
-         <button class="audio-btn-flag-sm" onclick="event.stopPropagation();speakWord('${exSafe}',this,'pt-PT')" title="欧洲葡语">🇵🇹</button>`;
+      : `<button class="audio-btn-flag-sm" onclick="event.stopPropagation();speakWord('${exSafe}',this,'pt-BR')" title="巴西葡语例句发音">🇧🇷</button>
+         <button class="audio-btn-flag-sm" onclick="event.stopPropagation();speakWord('${exSafe}',this,'pt-PT')" title="欧洲葡语例句发音">🇵🇹</button>`;
 
     return `
     <div class="word-card" style="animation:fadeIn 0.${3+i}s ease both">
