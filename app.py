@@ -214,6 +214,16 @@ __CONTENT__
 #  HELPERS
 # ═══════════════════════════════════════════════════════════════════════
 
+async def safe_json(request: Request) -> dict:
+    """Safely parse JSON body, handling encoding errors gracefully."""
+    try:
+        body = await request.body()
+        return json.loads(body.decode("utf-8", errors="replace"))
+    except Exception as e:
+        logger.warning(f"JSON parse error: {e}")
+        return {}
+
+
 async def call_llm(prompt: str, max_tokens: int = 2000, temperature: float = 0.8) -> str:
     if not DEEPSEEK_API_KEY:
         raise RuntimeError("DEEPSEEK_API_KEY not configured")
@@ -261,7 +271,7 @@ async def index(request: Request):
 
 @app.post("/api/generate-words")
 async def generate_words(request: Request):
-    body = await request.json()
+    body = await safe_json(request)
     language = body.get("language", "jp")
     level = body.get("level", "N3" if language == "jp" else "B1")
 
@@ -284,7 +294,7 @@ async def generate_words(request: Request):
 
 @app.post("/api/generate-article")
 async def generate_article(request: Request):
-    body = await request.json()
+    body = await safe_json(request)
     language = body.get("language", "jp")
     level = body.get("level", "N3" if language == "jp" else "B1")
 
@@ -307,7 +317,7 @@ async def generate_article(request: Request):
 
 @app.post("/api/summarize")
 async def summarize_article(request: Request):
-    body = await request.json()
+    body = await safe_json(request)
     language = body.get("language", "jp")
     title = body.get("title", "")
     content = body.get("content", "")
@@ -326,7 +336,7 @@ async def summarize_article(request: Request):
 @app.post("/api/lookup-word")
 async def lookup_word(request: Request):
     """Look up a word's pronunciation, meaning, and usage from an article context."""
-    body = await request.json()
+    body = await safe_json(request)
     language = body.get("language", "jp")
     word = body.get("word", "")
     context = body.get("context", "")
