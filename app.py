@@ -62,13 +62,16 @@ CAPLE_LEVELS = {
 #  PROMPT BUILDERS — generate prompts based on language + level
 # ═══════════════════════════════════════════════════════════════════════
 
-def build_jp_words_prompt(level: str) -> str:
+def build_jp_words_prompt(level: str, exclude: list = None) -> str:
     desc = JLPT_LEVELS.get(level, JLPT_LEVELS["N3"])
+    exclude_note = ""
+    if exclude and len(exclude) > 0:
+        exclude_note = f"\n【除外単語 — 以下の単語は絶対に含めないでください】\n{', '.join(exclude)}\n"
     return f"""あなたは日本語教育の専門家です。JLPT {level} レベルの日本語学習者（中国語話者）向けに、{level}レベルの単語を厳密に10個生成してください。
 
 【レベル要件】
 {desc}
-
+{exclude_note}
 【厳守ルール】
 - {level}レベルの語彙リスト（JLPT公式出題基準）から単語を選出すること
 - すべての単語と例文は**自然な日本語**で書く
@@ -95,13 +98,16 @@ def build_jp_words_prompt(level: str) -> str:
 {level}レベルの単語を10個、今すぐ生成してください。毎回異なる単語セットを出力すること。"""
 
 
-def build_pt_words_prompt(level: str) -> str:
+def build_pt_words_prompt(level: str, exclude: list = None) -> str:
     desc = CAPLE_LEVELS.get(level, CAPLE_LEVELS["B1"])
+    exclude_note = ""
+    if exclude and len(exclude) > 0:
+        exclude_note = f"\n【Palavras EXCLUÍDAS — NÃO inclua estas palavras de forma alguma】\n{', '.join(exclude)}\n"
     return f"""Você é um especialista em ensino de português. Gere 10 palavras em português no nível {level} do QECR/CAPLE para falantes de chinês.
 
 【Requisitos do nível {level}】
 {desc}
-
+{exclude_note}
 【Regras obrigatórias】
 - Selecione vocabulário adequado ao nível {level}
 - Escreva frases de exemplo em português natural
@@ -274,11 +280,12 @@ async def generate_words(request: Request):
     body = await safe_json(request)
     language = body.get("language", "jp")
     level = body.get("level", "N3" if language == "jp" else "B1")
+    exclude = body.get("exclude", [])
 
     if language == "jp":
-        prompt = build_jp_words_prompt(level)
+        prompt = build_jp_words_prompt(level, exclude)
     elif language == "pt":
-        prompt = build_pt_words_prompt(level)
+        prompt = build_pt_words_prompt(level, exclude)
     else:
         return JSONResponse({"success": False, "error": "Invalid language"}, status_code=400)
 
