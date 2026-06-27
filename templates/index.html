@@ -242,7 +242,7 @@ function setLevel(level) {
   currentLevel = level;
   renderLevelBar();
   // Reset and reload
-  wordsData = null; articleData = null; summaryText = ''; previousWords = [];
+  wordsData = null; articleData = null; summaryText = ''; allWords.clear();
   document.getElementById('summary-btn').textContent = '📋 查看概述';
   loadCurrentTab();
 }
@@ -258,7 +258,7 @@ function switchLanguage(lang) {
   document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
   document.documentElement.setAttribute('data-theme', lang === 'pt' ? 'pt' : '');
   currentLevel = lang === 'jp' ? 'N3' : 'B1';
-  wordsData = null; articleData = null; summaryText = ''; previousWords = [];
+  wordsData = null; articleData = null; summaryText = ''; allWords.clear();
   document.getElementById('summary-btn').textContent = '📋 查看概述';
   renderLevelBar();
   loadCurrentTab();
@@ -410,20 +410,21 @@ function loadVoices() { return ensureVoices(); }
 // ═══════════════════════════════════════════════════
 //  Word View
 // ═══════════════════════════════════════════════════
-let previousWords = [];  // Track last batch to avoid duplicates
+let allWords = new Set();  // Cumulative memory across all batches
 
 async function refreshWords() {
   if (isLoading) return;
   setLoading(true);
   const grid = document.getElementById('word-grid');
-  grid.innerHTML = '<div class="loading"><div class="spinner"></div><p>正在生成 ' + currentLevel + ' 级别单词...</p></div>';
+  const total = allWords.size;
+  grid.innerHTML = '<div class="loading"><div class="spinner"></div><p>正在生成 ' + currentLevel + ' 级别单词' + (total > 0 ? '（已学 ' + total + ' 词）' : '') + '...</p></div>';
   try {
     const body = { language: currentLanguage, level: currentLevel };
-    if (previousWords.length > 0) body.exclude = previousWords;
+    if (allWords.size > 0) body.exclude = [...allWords];
     const result = await apiCall('/api/generate-words', body);
     wordsData = result.data.words;
-    // Track current words for next exclusion
-    previousWords = wordsData.map(w => w.word);
+    // Add new words to cumulative memory
+    wordsData.forEach(w => allWords.add(w.word));
     renderWords(wordsData);
   } catch (err) {
     grid.innerHTML = `<div class="loading"><p>❌ ${esc(err.message)}</p></div>`;
