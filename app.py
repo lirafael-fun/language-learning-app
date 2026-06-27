@@ -66,7 +66,8 @@ def build_jp_words_prompt(level: str, exclude: list = None) -> str:
     desc = JLPT_LEVELS.get(level, JLPT_LEVELS["N3"])
     exclude_note = ""
     if exclude and len(exclude) > 0:
-        exclude_note = f"\n【除外単語 — 以下の単語は絶対に含めないでください】\n{', '.join(exclude)}\n"
+        capped = exclude[-50:] if len(exclude) > 50 else exclude
+        exclude_note = f"\n【既出単語リスト — 以下の単語のうち、重複してよいのは最大2語まで。それ以外の8語以上は新しい単語にすること】\n{', '.join(capped)}\n"
     return f"""あなたは日本語教育の専門家です。JLPT {level} レベルの日本語学習者（中国語話者）向けに、{level}レベルの単語を厳密に10個生成してください。
 
 【レベル要件】
@@ -102,7 +103,8 @@ def build_pt_words_prompt(level: str, exclude: list = None) -> str:
     desc = CAPLE_LEVELS.get(level, CAPLE_LEVELS["B1"])
     exclude_note = ""
     if exclude and len(exclude) > 0:
-        exclude_note = f"\n【Palavras EXCLUÍDAS — NÃO inclua estas palavras de forma alguma】\n{', '.join(exclude)}\n"
+        capped = exclude[-50:] if len(exclude) > 50 else exclude
+        exclude_note = f"\n【Palavras já usadas — no máximo 2 destas podem aparecer. As outras 8+ devem ser NOVAS】\n{', '.join(capped)}\n"
     return f"""Você é um especialista em ensino de português. Gere 10 palavras em português no nível {level} do QECR/CAPLE para falantes de chinês.
 
 【Requisitos do nível {level}】
