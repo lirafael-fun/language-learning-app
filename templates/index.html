@@ -124,6 +124,34 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC
 .lookup-float { position: fixed; z-index: 1999; background: var(--accent); color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 16px rgba(0,0,0,0.25); animation: popIn 0.2s ease; user-select: none; white-space: nowrap; }
 .lookup-float:hover { background: var(--accent-hover); transform: translateY(-1px); }
 
+/* Notebook */
+.nb-toggle { position: fixed; bottom: 24px; right: 24px; z-index: 1500; width: 52px; height: 52px; border-radius: 50%; border: none; background: var(--accent); color: #fff; font-size: 1.1rem; cursor: pointer; box-shadow: 0 4px 16px rgba(0,0,0,0.25); transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 2px; }
+.nb-toggle:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+.nb-toggle #nb-count { font-size: 0.7rem; background: rgba(255,255,255,0.3); border-radius: 10px; padding: 1px 6px; min-width: 18px; text-align: center; }
+.notebook { position: fixed; top: 0; right: 0; width: 360px; max-width: 90vw; height: 100vh; z-index: 2500; background: var(--bg-card); box-shadow: -4px 0 24px rgba(0,0,0,0.15); display: none; flex-direction: column; animation: slideIn 0.3s ease; }
+@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+.notebook.open { display: flex; }
+.nb-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1rem; color: var(--text); }
+.nb-sub { font-size: 0.75rem; color: var(--text-secondary); font-weight: 400; margin-left: auto; }
+.nb-close { border: none; background: none; font-size: 1.2rem; cursor: pointer; color: var(--text-secondary); padding: 4px; }
+.nb-list { flex: 1; overflow-y: auto; padding: 12px; }
+.nb-empty { text-align: center; color: var(--text-secondary); padding: 40px 20px; font-size: 0.9rem; }
+.nb-item { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 8px; margin-bottom: 6px; background: var(--bg); border: 1px solid var(--border); transition: all 0.2s; cursor: grab; }
+.nb-item:hover { border-color: var(--accent); }
+.nb-item .nb-word { font-weight: 700; font-size: 0.95rem; color: var(--text); min-width: 60px; }
+.nb-item .nb-reading { font-size: 0.78rem; color: var(--reading-color); }
+.nb-item .nb-meaning { font-size: 0.82rem; color: var(--text-secondary); margin-left: auto; }
+.nb-item .nb-remove { border: none; background: none; color: #c0392b; cursor: pointer; font-size: 1rem; padding: 2px 6px; opacity: 0.5; }
+.nb-item .nb-remove:hover { opacity: 1; }
+.nb-item .nb-speak { border: none; background: none; cursor: pointer; font-size: 0.9rem; padding: 2px; opacity: 0.5; }
+.nb-item .nb-speak:hover { opacity: 1; }
+.nb-footer { padding: 12px 20px; border-top: 1px solid var(--border); text-align: center; }
+
+/* Notebook add button on word card */
+.nb-add-btn { position: absolute; top: 12px; right: 12px; width: 28px; height: 28px; border-radius: 50%; border: 1.5px dashed var(--border); background: var(--bg-card); cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: var(--text-secondary); }
+.nb-add-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+.nb-add-btn.saved { border-style: solid; border-color: var(--accent); background: var(--accent); color: #fff; }
+
 /* Buttons */
 .btn-row { display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
 .btn { padding: 11px 26px; border: none; border-radius: 28px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 5px; }
@@ -214,6 +242,24 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC
   <div class="popup-content" id="popup-content"></div>
 </div>
 
+<!-- Notebook Toggle Button -->
+<button id="nb-toggle" class="nb-toggle" onclick="toggleNotebook()" title="单词本">📒 <span id="nb-count">0</span></button>
+
+<!-- Notebook Panel -->
+<div id="notebook" class="notebook">
+  <div class="nb-header">
+    <span>📒 单词本</span>
+    <span class="nb-sub" id="nb-sub"></span>
+    <button class="nb-close" onclick="toggleNotebook()">✕</button>
+  </div>
+  <div class="nb-list" id="nb-list">
+    <p class="nb-empty">点击单词卡上的 📒+ 加入单词本</p>
+  </div>
+  <div class="nb-footer">
+    <button class="btn btn-secondary btn-small" onclick="clearNotebook()">🗑 清空</button>
+  </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════════════
 //  State
@@ -225,6 +271,92 @@ let wordsData = null, articleData = null, summaryText = '', isLoading = false;
 
 const jpLevels = ['N5','N4','N3','N2','N1'];
 const ptLevels = ['A1','A2','B1','B2','C1','C2'];
+
+// ═══════════════════════════════════════════════════
+//  Notebook (persistent word collection)
+// ═══════════════════════════════════════════════════
+function nbKey() { return 'nb_' + currentLanguage + '_' + currentLevel; }
+function loadNotebook() {
+  try { return JSON.parse(localStorage.getItem(nbKey()) || '[]'); }
+  catch { return []; }
+}
+function saveNotebook(arr) {
+  localStorage.setItem(nbKey(), JSON.stringify(arr));
+  updateNbBadge();
+}
+
+let notebookWords = loadNotebook();
+
+function updateNbBadge() {
+  document.getElementById('nb-count').textContent = notebookWords.length;
+  document.getElementById('nb-sub').textContent = notebookWords.length + ' 词 · ' + currentLevel;
+}
+
+function renderNotebook() {
+  const list = document.getElementById('nb-list');
+  if (!notebookWords.length) {
+    list.innerHTML = '<p class="nb-empty">点击单词卡上的 📒+ 加入单词本</p>';
+    return;
+  }
+  const isJP = currentLanguage === 'jp';
+  list.innerHTML = notebookWords.map((w, i) => `
+    <div class="nb-item" draggable="true">
+      <button class="nb-speak" onclick="speakWord('${esc(w.word).replace(/'/g,"\\'")}',this,'${currentLanguage==='jp'?'ja-JP':'pt-BR'}')">🔊</button>
+      <span class="nb-word">${esc(w.word)}</span>
+      ${isJP && w.reading ? `<span class="nb-reading">${esc(w.reading)}</span>` : ''}
+      <span class="nb-meaning">${esc(w.meaning_cn)}</span>
+      <button class="nb-remove" onclick="removeFromNotebook(${i})" title="移除">✕</button>
+    </div>
+  `).join('');
+  updateNbBadge();
+}
+
+function addToNotebook(wordObj) {
+  if (notebookWords.find(w => w.word === wordObj.word)) return;
+  notebookWords.push(wordObj);
+  saveNotebook(notebookWords);
+  renderNotebook();
+}
+
+function removeFromNotebook(idx) {
+  notebookWords.splice(idx, 1);
+  saveNotebook(notebookWords);
+  renderNotebook();
+  // Re-render word cards to update save state
+  if (wordsData) renderWords(wordsData);
+}
+
+function clearNotebook() {
+  if (!confirm('确定清空当前等级的单词本？')) return;
+  notebookWords = [];
+  saveNotebook(notebookWords);
+  renderNotebook();
+  if (wordsData) renderWords(wordsData);
+}
+
+function toggleNotebook() {
+  document.getElementById('notebook').classList.toggle('open');
+  renderNotebook();
+}
+
+function isInNotebook(word) {
+  return notebookWords.some(w => w.word === word);
+}
+
+function toggleNbWord(idx) {
+  if (!wordsData || !wordsData[idx]) return;
+  const w = wordsData[idx];
+  const existing = notebookWords.findIndex(x => x.word === w.word);
+  if (existing >= 0) {
+    removeFromNotebook(existing);
+  } else {
+    addToNotebook({ word: w.word, reading: w.reading || '', meaning_cn: w.meaning_cn, pos: w.pos });
+  }
+}
+
+// Initialize
+updateNbBadge();
+renderNotebook();
 
 // ═══════════════════════════════════════════════════
 //  Level Selector
@@ -243,6 +375,9 @@ function setLevel(level) {
   renderLevelBar();
   // Reset and reload
   wordsData = null; articleData = null; summaryText = ''; allWords.clear();
+  notebookWords = loadNotebook();
+  updateNbBadge();
+  renderNotebook();
   document.getElementById('summary-btn').textContent = '📋 查看概述';
   loadCurrentTab();
 }
@@ -259,6 +394,9 @@ function switchLanguage(lang) {
   document.documentElement.setAttribute('data-theme', lang === 'pt' ? 'pt' : '');
   currentLevel = lang === 'jp' ? 'N3' : 'B1';
   wordsData = null; articleData = null; summaryText = ''; allWords.clear();
+  notebookWords = loadNotebook();
+  updateNbBadge();
+  renderNotebook();
   document.getElementById('summary-btn').textContent = '📋 查看概述';
   renderLevelBar();
   loadCurrentTab();
@@ -420,7 +558,9 @@ async function refreshWords() {
   grid.innerHTML = '<div class="loading"><div class="spinner"></div><p>正在生成 ' + currentLevel + ' 级别单词' + (total > 0 ? '（已学 ' + total + ' 词）' : '') + '...</p></div>';
   try {
     const body = { language: currentLanguage, level: currentLevel };
-    if (allWords.size > 0) body.exclude = [...allWords];
+    // Exclude both session words and notebook words
+    const excludeSet = new Set([...allWords, ...notebookWords.map(w => w.word)]);
+    if (excludeSet.size > 0) body.exclude = [...excludeSet];
     const result = await apiCall('/api/generate-words', body);
     wordsData = result.data.words;
     // Add new words to cumulative memory
@@ -454,6 +594,7 @@ function renderWords(words) {
 
     return `
     <div class="word-card" style="animation:fadeIn 0.${3+i}s ease both">
+      <button class="nb-add-btn${isInNotebook(w.word)?' saved':''}" onclick="event.stopPropagation();toggleNbWord(${i})" title="${isInNotebook(w.word)?'已加入单词本':'加入单词本'}">${isInNotebook(w.word)?'✓':'+'}</button>
       <div class="word-header">
         ${wordAudio}
         <div>
@@ -502,7 +643,10 @@ function renderArticle(data) {
 
   container.innerHTML = `
     <div class="article-card">
-      <h2 class="article-title">${esc(data.title)}${levelBadge}</h2>
+      <h2 class="article-title">
+        ${esc(data.title)}${levelBadge}
+        <button class="audio-btn-sm" onclick="readArticle()" title="朗读全文" style="margin-left:8px;opacity:1;width:30px;height:30px;font-size:0.9rem;">🔊</button>
+      </h2>
       ${region}
       <div class="article-body" id="article-body">${esc(data.content)}</div>
       <div id="summary-area"></div>
@@ -606,6 +750,34 @@ document.addEventListener('click', (e) => {
     closePopup();
   }
 });
+
+// ═══════════════════════════════════════════════════
+//  Article Reading
+// ═══════════════════════════════════════════════════
+let _isReading = false;
+async function readArticle() {
+  if (!articleData || !window.speechSynthesis) return;
+  if (_isReading) { window.speechSynthesis.cancel(); _isReading = false; return; }
+  _isReading = true;
+  await ensureVoices();
+  // Split into sentences (JP: by 。 or 、; PT: by . or ;)
+  const text = articleData.content;
+  const sentences = text.split(/(?<=[。！？.!?；;])\s*/).filter(s => s.trim());
+  for (const sentence of sentences) {
+    if (!_isReading) break;
+    await new Promise((resolve) => {
+      const u = new SpeechSynthesisUtterance(sentence.trim());
+      u.lang = currentLanguage === 'jp' ? 'ja-JP' : 'pt-BR';
+      const voice = findVoice(u.lang);
+      if (voice) u.voice = voice;
+      u.rate = currentLanguage === 'jp' ? 0.85 : 0.75;
+      u.onend = resolve;
+      u.onerror = resolve;
+      window.speechSynthesis.speak(u);
+    });
+  }
+  _isReading = false;
+}
 
 // ═══════════════════════════════════════════════════
 //  Article Summary
